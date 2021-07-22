@@ -14,7 +14,7 @@ router.post("/", async (req, res, next) => {
 
     // if we already know conversation id, we can save time and just add it to message and return
     if (conversationId) {
-      // if sender is not in this conversation, return 404 HTTP response
+      // if sender is not in this conversation, return 403 HTTP response
       let conversation = await Conversation.findConversation(
         senderId,
         recipientId
