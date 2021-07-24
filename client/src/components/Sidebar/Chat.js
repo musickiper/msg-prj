@@ -27,6 +27,8 @@ class Chat extends Component {
   handleClick = async (conversation, user, otherUserLatestMessage) => {
     await this.props.setActiveChat(conversation.otherUser.username);
 
+    // update my latest checked msg in this conv
+    // to other user's latest created msg
     if (otherUserLatestMessage) {
       this.props.postLatestReadMessage({
         message: {
@@ -38,6 +40,7 @@ class Chat extends Component {
     }
   };
 
+  // find latest checked other's msg of mine
   findLatestReadMessage = (latestReadMessages, userId, conversationId) => {
     return latestReadMessages.find((message) => {
       return (
@@ -46,6 +49,7 @@ class Chat extends Component {
     });
   };
 
+  // find other's latest created msg
   getOtherUserLatestMessage = (messages, userId) => {
     if (messages && userId) {
       const otherUserMessages = messages.filter(
@@ -57,6 +61,7 @@ class Chat extends Component {
     }
   };
 
+  // get count of unread other's msg of me
   countUnreadMessages = (user, messages, latestReadMessage) => {
     if (messages && latestReadMessage) {
       const unreadMessages = messages.filter(
@@ -78,15 +83,18 @@ class Chat extends Component {
   render() {
     const { user, classes, conversation, latestReadMessages } = this.props;
     const otherUser = conversation.otherUser;
+    // get other user's latest created msg in this conv
     const otherUserLatestMessage = this.getOtherUserLatestMessage(
       conversation.messages,
       otherUser.id
     );
+    // get my latest checked msg in this conv
     const latestReadMessage = this.findLatestReadMessage(
       latestReadMessages,
       user.id,
       conversation.id
     );
+    // get count of unread other's messages in this cov
     const unreadMessagesCount = this.countUnreadMessages(
       user,
       conversation.messages,

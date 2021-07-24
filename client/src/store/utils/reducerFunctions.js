@@ -82,6 +82,8 @@ export const addNewConvoToStore = (state, recipientId, message) => {
   });
 };
 
+// if there is matched latestReadMessage, update it with new message in store
+// if not, add new latestReadMessage to store
 export const updateLatestReadMsgOfStore = (state, latestReadMessage) => {
   const matchedMessage = state.find(
     (message) =>

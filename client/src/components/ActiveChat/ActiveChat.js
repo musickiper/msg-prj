@@ -42,13 +42,18 @@ const ActiveChat = (props) => {
   const conversation = props.conversation || {};
   const latestReadMessages = props.latestReadMessage || {};
 
+  // get other user's latest checked msg
+  // it is used for tracking the lastest checked msg of other user
   const otherUserLatestReadMessage = getOtherUserLatestReadMesage(
     latestReadMessages,
     conversation,
     user
   );
+  // get other user's latest created msg
+  // it is used for updating my latest checked msg in this cov
   const otherUserLatestMessage = getOtherUserLatestMessage(conversation, user);
 
+  // when I click the active chat room, keep my latest checked message up-to-date
   const handleClick = (conversation, user, otherUserLatestMessage) => {
     if (otherUserLatestMessage) {
       postLatestReadMessage({

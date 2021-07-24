@@ -6,20 +6,20 @@ const useStyles = makeStyles(() => ({
   root: {
     display: "flex",
     flexDirection: "column",
-    alignItems: "flex-end"
+    alignItems: "flex-end",
   },
   date: {
     fontSize: 11,
     color: "#BECCE2",
     fontWeight: "bold",
-    marginBottom: 5
+    marginBottom: 5,
   },
   text: {
     fontSize: 14,
     color: "#91A3C0",
     letterSpacing: -0.2,
     padding: 8,
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
   bubble: {
     background: "#F4F6FA",
@@ -42,6 +42,7 @@ const SenderBubble = (props) => {
       <Box className={classes.bubble}>
         <Typography className={classes.text}>{text}</Typography>
       </Box>
+      {/* put avatar right below other user's latest checked msg */}
       {otherLatestReadMsgId === messageId && (
         <Avatar
           alt={otherUser.username}

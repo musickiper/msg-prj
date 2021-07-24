@@ -7,6 +7,7 @@ const UPDATE_LATEST_READ_MESSAGE = "UPDATE_LATEST_READ_MESSAGE";
 
 // ACTION CREATORS
 
+// get all latestReadMessages
 export const gotLatestReadMessages = (latestReadMessages) => {
   return {
     type: GET_LATEST_READ_MESSAGES,

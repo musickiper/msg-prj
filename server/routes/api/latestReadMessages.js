@@ -36,6 +36,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+// update or create latestReadMessage
 router.post("/", async (req, res, next) => {
   try {
     if (!req.user) {
