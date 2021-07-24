@@ -2,6 +2,7 @@ const db = require("./db");
 const { User } = require("./models");
 const Conversation = require("./models/conversation");
 const Message = require("./models/message");
+const LatestReadMessage = require("./models/latestReadMessage");
 
 async function seed() {
   await db.sync({ force: true });
@@ -38,10 +39,22 @@ async function seed() {
     senderId: thomas.id,
     text: "I'm from New York",
   });
-  await Message.create({
+  const latestReadMessage1 = await Message.create({
     conversationId: santaigoConvo.id,
     senderId: santiago.id,
     text: "Share photo of your city, please",
+  });
+
+  await LatestReadMessage.create({
+    conversationId: santaigoConvo.id,
+    userId: santiago.id,
+    messageId: latestReadMessage1.id,
+  });
+
+  await LatestReadMessage.create({
+    conversationId: santaigoConvo.id,
+    userId: thomas.id,
+    messageId: latestReadMessage1.id,
   });
 
   const chiumbo = await User.create({
@@ -55,10 +68,22 @@ async function seed() {
     user1Id: chiumbo.id,
     user2Id: thomas.id,
   });
-  await Message.create({
+  const latestReadMessage2 = await Message.create({
     conversationId: chiumboConvo.id,
     senderId: chiumbo.id,
     text: "Sure! What time?",
+  });
+
+  await LatestReadMessage.create({
+    conversationId: chiumboConvo.id,
+    userId: chiumbo.id,
+    messageId: latestReadMessage2.id,
+  });
+
+  await LatestReadMessage.create({
+    conversationId: chiumboConvo.id,
+    userId: thomas.id,
+    messageId: latestReadMessage2.id,
   });
 
   const hualing = await User.create({
@@ -81,10 +106,22 @@ async function seed() {
     });
   }
 
-  await Message.create({
+  const latestReadMessage3 = await Message.create({
     conversationId: hualingConvo.id,
     senderId: hualing.id,
     text: "😂 😂 😂",
+  });
+
+  await LatestReadMessage.create({
+    conversationId: hualingConvo.id,
+    userId: hualing.id,
+    messageId: latestReadMessage3.id,
+  });
+
+  await LatestReadMessage.create({
+    conversationId: chiumboConvo.id,
+    userId: thomas.id,
+    messageId: latestReadMessage3.id,
   });
 
   const otherUsers = await Promise.all([

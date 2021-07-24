@@ -1,8 +1,9 @@
 import React, { Component } from "react";
-import { Box } from "@material-ui/core";
+import { Box, Chip } from "@material-ui/core";
 import { BadgeAvatar, ChatContent } from "../Sidebar";
 import { withStyles } from "@material-ui/core/styles";
 import { setActiveChat } from "../../store/activeConversation";
+import { postLatestReadMessage } from "../../store/utils/thunkCreators";
 import { connect } from "react-redux";
 
 const styles = {
@@ -17,19 +18,91 @@ const styles = {
       cursor: "grab",
     },
   },
+  chip: {
+    marginRight: "4px",
+  },
 };
 
 class Chat extends Component {
-  handleClick = async (conversation) => {
+  handleClick = async (conversation, user, otherUserLatestMessage) => {
     await this.props.setActiveChat(conversation.otherUser.username);
+
+    if (otherUserLatestMessage) {
+      this.props.postLatestReadMessage({
+        message: {
+          userId: user.id,
+          conversationId: conversation.id,
+          messageId: otherUserLatestMessage.id,
+        },
+      });
+    }
+  };
+
+  findLatestReadMessage = (latestReadMessages, userId, conversationId) => {
+    return latestReadMessages.find((message) => {
+      return (
+        message.userId === userId && message.conversationId === conversationId
+      );
+    });
+  };
+
+  getOtherUserLatestMessage = (messages, userId) => {
+    if (messages && userId) {
+      const otherUserMessages = messages.filter(
+        ({ senderId }) => senderId === userId
+      );
+      return otherUserMessages[otherUserMessages.length - 1];
+    } else {
+      return null;
+    }
+  };
+
+  countUnreadMessages = (user, messages, latestReadMessage) => {
+    if (messages && latestReadMessage) {
+      const unreadMessages = messages.filter(
+        (message) =>
+          message.senderId !== user.id &&
+          message.id > latestReadMessage.messageId
+      );
+      return unreadMessages.length;
+    } else if (messages && !latestReadMessage) {
+      const unreadMessages = messages.filter(
+        (message) => message.senderId !== user.id
+      );
+      return unreadMessages.length;
+    } else {
+      return 0;
+    }
   };
 
   render() {
-    const { classes } = this.props;
-    const otherUser = this.props.conversation.otherUser;
+    const { user, classes, conversation, latestReadMessages } = this.props;
+    const otherUser = conversation.otherUser;
+    const otherUserLatestMessage = this.getOtherUserLatestMessage(
+      conversation.messages,
+      otherUser.id
+    );
+    const latestReadMessage = this.findLatestReadMessage(
+      latestReadMessages,
+      user.id,
+      conversation.id
+    );
+    const unreadMessagesCount = this.countUnreadMessages(
+      user,
+      conversation.messages,
+      latestReadMessage,
+      otherUserLatestMessage
+    );
+
     return (
       <Box
-        onClick={() => this.handleClick(this.props.conversation)}
+        onClick={() =>
+          this.handleClick(
+            this.props.conversation,
+            user,
+            otherUserLatestMessage
+          )
+        }
         className={classes.root}
       >
         <BadgeAvatar
@@ -39,17 +112,35 @@ class Chat extends Component {
           sidebar={true}
         />
         <ChatContent conversation={this.props.conversation} />
+        {unreadMessagesCount !== 0 && (
+          <div className={classes.chip}>
+            <Chip color="primary" label={unreadMessagesCount} />
+          </div>
+        )}
       </Box>
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.user,
+    latestReadMessages: state.latestReadMessage,
+  };
+};
 
 const mapDispatchToProps = (dispatch) => {
   return {
     setActiveChat: (id) => {
       dispatch(setActiveChat(id));
     },
+    postLatestReadMessage: (message) => {
+      dispatch(postLatestReadMessage(message));
+    },
   };
 };
 
-export default connect(null, mapDispatchToProps)(withStyles(styles)(Chat));
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withStyles(styles)(Chat));

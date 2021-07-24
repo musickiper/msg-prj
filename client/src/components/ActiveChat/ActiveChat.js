@@ -3,12 +3,13 @@ import { makeStyles } from "@material-ui/core/styles";
 import { Box } from "@material-ui/core";
 import { Input, Header, Messages } from "./index";
 import { connect } from "react-redux";
+import { postLatestReadMessage } from "../../store/utils/thunkCreators";
 
 const useStyles = makeStyles(() => ({
   root: {
     display: "flex",
     flexGrow: 8,
-    flexDirection: "column"
+    flexDirection: "column",
   },
   chatContainer: {
     marginLeft: 41,
@@ -16,17 +17,55 @@ const useStyles = makeStyles(() => ({
     display: "flex",
     flexDirection: "column",
     flexGrow: 1,
-    justifyContent: "space-between"
-  }
+    justifyContent: "space-between",
+  },
 }));
+
+const getOtherUserLatestReadMesage = (latestReadMessages, conversation, user) =>
+  latestReadMessages.find(({ conversationId, userId }) => {
+    return conversationId === conversation.id && userId !== user.id;
+  });
+
+const getOtherUserLatestMessage = (conversation, user) => {
+  if (conversation && conversation.messages) {
+    const otherUserMessages = conversation.messages.filter(
+      (message) => message.senderId !== user.id
+    );
+    return otherUserMessages[otherUserMessages.length - 1];
+  }
+  return null;
+};
 
 const ActiveChat = (props) => {
   const classes = useStyles();
-  const { user } = props;
+  const { user, postLatestReadMessage } = props;
   const conversation = props.conversation || {};
+  const latestReadMessages = props.latestReadMessage || {};
+
+  const otherUserLatestReadMessage = getOtherUserLatestReadMesage(
+    latestReadMessages,
+    conversation,
+    user
+  );
+  const otherUserLatestMessage = getOtherUserLatestMessage(conversation, user);
+
+  const handleClick = (conversation, user, otherUserLatestMessage) => {
+    if (otherUserLatestMessage) {
+      postLatestReadMessage({
+        message: {
+          userId: user.id,
+          conversationId: conversation.id,
+          messageId: otherUserLatestMessage.id,
+        },
+      });
+    }
+  };
 
   return (
-    <Box className={classes.root}>
+    <Box
+      className={classes.root}
+      onClick={() => handleClick(conversation, user, otherUserLatestMessage)}
+    >
       {conversation.otherUser && (
         <>
           <Header
@@ -38,6 +77,11 @@ const ActiveChat = (props) => {
               messages={conversation.messages}
               otherUser={conversation.otherUser}
               userId={user.id}
+              otherLatestReadMsgId={
+                otherUserLatestReadMessage
+                  ? otherUserLatestReadMessage.messageId
+                  : -1
+              }
             />
             <Input
               otherUser={conversation.otherUser}
@@ -57,9 +101,19 @@ const mapStateToProps = (state) => {
     conversation:
       state.conversations &&
       state.conversations.find(
-        (conversation) => conversation.otherUser.username === state.activeConversation
-      )
+        (conversation) =>
+          conversation.otherUser.username === state.activeConversation
+      ),
+    latestReadMessage: state.latestReadMessage,
   };
 };
 
-export default connect(mapStateToProps, null)(ActiveChat);
+const mapDispatchToProps = (dispatch) => {
+  return {
+    postLatestReadMessage: (message) => {
+      dispatch(postLatestReadMessage(message));
+    },
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ActiveChat);

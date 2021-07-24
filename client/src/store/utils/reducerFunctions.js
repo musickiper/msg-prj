@@ -81,3 +81,31 @@ export const addNewConvoToStore = (state, recipientId, message) => {
     }
   });
 };
+
+export const updateLatestReadMsgOfStore = (state, latestReadMessage) => {
+  const matchedMessage = state.find(
+    (message) =>
+      message.conversationId === latestReadMessage.conversationId &&
+      message.userId === latestReadMessage.userId
+  );
+
+  if (matchedMessage) {
+    return state.map((message) => {
+      if (
+        message.conversationId === latestReadMessage.conversationId &&
+        message.userId === latestReadMessage.userId
+      ) {
+        return {
+          ...message,
+          ...latestReadMessage,
+        };
+      } else {
+        return message;
+      }
+    });
+  } else {
+    const newState = [...state];
+    newState.push(latestReadMessage);
+    return newState;
+  }
+};
