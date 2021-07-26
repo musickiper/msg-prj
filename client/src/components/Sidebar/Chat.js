@@ -34,12 +34,14 @@ const Chat = (props) => {
       // update my latest checked msg in this conv
       // to other user's latest created msg
       if (otherUserLatestMessage) {
+        const { id, senderId } = otherUserLatestMessage;
         props.postLatestReadMessage({
           message: {
             userId: user.id,
             conversationId: conversation.id,
-            messageId: otherUserLatestMessage.id,
+            messageId: id,
           },
+          otherUserId: senderId,
         });
       }
     },
@@ -150,8 +152,9 @@ const mapDispatchToProps = (dispatch) => {
     setActiveChat: (id) => {
       dispatch(setActiveChat(id));
     },
-    postLatestReadMessage: (message) => {
-      dispatch(postLatestReadMessage(message));
+    postLatestReadMessage: (data) => {
+      const { message, otherUserId } = data;
+      dispatch(postLatestReadMessage(message, otherUserId));
     },
   };
 };

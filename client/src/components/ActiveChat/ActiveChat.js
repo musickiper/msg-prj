@@ -69,12 +69,14 @@ const ActiveChat = (props) => {
   const handleClick = useCallback(
     (conversation, user, otherUserLatestMessage) => {
       if (otherUserLatestMessage) {
+        const { id, senderId } = otherUserLatestMessage;
         postLatestReadMessage({
           message: {
             userId: user.id,
             conversationId: conversation.id,
-            messageId: otherUserLatestMessage.id,
+            messageId: id,
           },
+          otherUserId: senderId,
         });
       }
     },
@@ -130,8 +132,9 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    postLatestReadMessage: (message) => {
-      dispatch(postLatestReadMessage(message));
+    postLatestReadMessage: (data) => {
+      const { message, otherUserId } = data;
+      dispatch(postLatestReadMessage(message, otherUserId));
     },
   };
 };
