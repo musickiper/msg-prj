@@ -21,7 +21,11 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const getOtherUserLatestReadMesage = (latestReadMessages, conversation, user) =>
+const getOtherUserLatestReadMessage = (
+  latestReadMessages,
+  conversation,
+  user
+) =>
   latestReadMessages.find(({ conversationId, userId }) => {
     return conversationId === conversation.id && userId !== user.id;
   });
@@ -44,7 +48,7 @@ const ActiveChat = (props) => {
 
   // get other user's latest checked msg
   // it is used for tracking the lastest checked msg of other user
-  const otherUserLatestReadMessage = getOtherUserLatestReadMesage(
+  const otherUserLatestReadMessage = getOtherUserLatestReadMessage(
     latestReadMessages,
     conversation,
     user
