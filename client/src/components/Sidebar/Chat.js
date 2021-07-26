@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Box, Chip } from "@material-ui/core";
 import { BadgeAvatar, ChatContent } from "../Sidebar";
 import { withStyles } from "@material-ui/core/styles";
@@ -23,25 +23,35 @@ const styles = {
   },
 };
 
-class Chat extends Component {
-  handleClick = async (conversation, user, otherUserLatestMessage) => {
-    await this.props.setActiveChat(conversation.otherUser.username);
+const Chat = (props) => {
+  const { user, classes, conversation, latestReadMessages } = props;
+  const otherUser = conversation.otherUser;
 
-    // update my latest checked msg in this conv
-    // to other user's latest created msg
-    if (otherUserLatestMessage) {
-      this.props.postLatestReadMessage({
-        message: {
-          userId: user.id,
-          conversationId: conversation.id,
-          messageId: otherUserLatestMessage.id,
-        },
-      });
-    }
-  };
+  const handleClick = useCallback(
+    async (conversation, user, otherUserLatestMessage) => {
+      await props.setActiveChat(conversation.otherUser.username);
+
+      // update my latest checked msg in this conv
+      // to other user's latest created msg
+      if (otherUserLatestMessage) {
+        props.postLatestReadMessage({
+          message: {
+            userId: user.id,
+            conversationId: conversation.id,
+            messageId: otherUserLatestMessage.id,
+          },
+        });
+      }
+    },
+    [props]
+  );
 
   // find latest checked other's msg of mine
-  findLatestReadMessage = (latestReadMessages, userId, conversationId) => {
+  const findLatestReadMessage = (
+    latestReadMessages,
+    userId,
+    conversationId
+  ) => {
     return latestReadMessages.find((message) => {
       return (
         message.userId === userId && message.conversationId === conversationId
@@ -50,7 +60,7 @@ class Chat extends Component {
   };
 
   // find other's latest created msg
-  getOtherUserLatestMessage = (messages, userId) => {
+  const getOtherUserLatestMessage = (messages, userId) => {
     if (messages && userId) {
       const otherUserMessages = messages.filter(
         ({ senderId }) => senderId === userId
@@ -62,7 +72,7 @@ class Chat extends Component {
   };
 
   // get count of unread other's msg of me
-  countUnreadMessages = (user, messages, latestReadMessage) => {
+  const countUnreadMessages = (user, messages, latestReadMessage) => {
     if (messages && latestReadMessage) {
       const unreadMessages = messages.filter(
         (message) =>
@@ -80,58 +90,53 @@ class Chat extends Component {
     }
   };
 
-  render() {
-    const { user, classes, conversation, latestReadMessages } = this.props;
-    const otherUser = conversation.otherUser;
-    // get other user's latest created msg in this conv
-    const otherUserLatestMessage = this.getOtherUserLatestMessage(
-      conversation.messages,
-      otherUser.id
-    );
-    // get my latest checked msg in this conv
-    const latestReadMessage = this.findLatestReadMessage(
-      latestReadMessages,
-      user.id,
-      conversation.id
-    );
-    // get count of unread other's messages in this cov
-    const unreadMessagesCount = this.countUnreadMessages(
-      user,
-      conversation.messages,
-      latestReadMessage,
-      otherUserLatestMessage
-    );
+  // get other user's latest created msg in this conv
+  const otherUserLatestMessage = useMemo(
+    () => getOtherUserLatestMessage(conversation.messages, otherUser.id),
+    [conversation.messages, otherUser.id]
+  );
+  // get my latest checked msg in this conv
+  const latestReadMessage = useMemo(
+    () => findLatestReadMessage(latestReadMessages, user.id, conversation.id),
+    [conversation.id, latestReadMessages, user.id]
+  );
+  // get count of unread other's messages in this cov
+  const unreadMessagesCount = useMemo(
+    () =>
+      countUnreadMessages(
+        user,
+        conversation.messages,
+        latestReadMessage,
+        otherUserLatestMessage
+      ),
+    [conversation.messages, latestReadMessage, otherUserLatestMessage, user]
+  );
 
-    return (
-      <Box
-        onClick={() =>
-          this.handleClick(
-            this.props.conversation,
-            user,
-            otherUserLatestMessage
-          )
-        }
-        className={classes.root}
-      >
-        <BadgeAvatar
-          photoUrl={otherUser.photoUrl}
-          username={otherUser.username}
-          online={otherUser.online}
-          sidebar={true}
-        />
-        <ChatContent
-          conversation={this.props.conversation}
-          unreadMessagesCount={unreadMessagesCount}
-        />
-        {unreadMessagesCount !== 0 && (
-          <div className={classes.chip}>
-            <Chip color="primary" label={unreadMessagesCount} />
-          </div>
-        )}
-      </Box>
-    );
-  }
-}
+  return (
+    <Box
+      onClick={() =>
+        handleClick(props.conversation, user, otherUserLatestMessage)
+      }
+      className={classes.root}
+    >
+      <BadgeAvatar
+        photoUrl={otherUser.photoUrl}
+        username={otherUser.username}
+        online={otherUser.online}
+        sidebar={true}
+      />
+      <ChatContent
+        conversation={props.conversation}
+        unreadMessagesCount={unreadMessagesCount}
+      />
+      {unreadMessagesCount !== 0 && (
+        <div className={classes.chip}>
+          <Chip color="primary" label={unreadMessagesCount} />
+        </div>
+      )}
+    </Box>
+  );
+};
 
 const mapStateToProps = (state) => {
   return {

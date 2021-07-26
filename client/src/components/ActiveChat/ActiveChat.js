@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Box } from "@material-ui/core";
 import { Input, Header, Messages } from "./index";
@@ -21,41 +21,49 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const getOtherUserLatestReadMessage = (
-  latestReadMessages,
-  conversation,
-  user
-) =>
-  latestReadMessages.find(({ conversationId, userId }) => {
-    return conversationId === conversation.id && userId !== user.id;
-  });
-
-const getOtherUserLatestMessage = (conversation, user) => {
-  if (conversation && conversation.messages) {
-    const otherUserMessages = conversation.messages.filter(
-      (message) => message.senderId !== user.id
-    );
-    return otherUserMessages[otherUserMessages.length - 1];
-  }
-  return null;
-};
-
 const ActiveChat = (props) => {
   const classes = useStyles();
   const { user, postLatestReadMessage } = props;
-  const conversation = props.conversation || {};
-  const latestReadMessages = props.latestReadMessage || [];
+  const conversation = useMemo(
+    () => props.conversation || {},
+    [props.conversation]
+  );
+  const latestReadMessages = useMemo(
+    () => props.latestReadMessage || [],
+    [props.latestReadMessage]
+  );
 
-  // get other user's latest checked msg
-  // it is used for tracking the lastest checked msg of other user
-  const otherUserLatestReadMessage = getOtherUserLatestReadMessage(
+  const getOtherUserLatestReadMessage = (
     latestReadMessages,
     conversation,
     user
+  ) =>
+    latestReadMessages.find(({ conversationId, userId }) => {
+      return conversationId === conversation.id && userId !== user.id;
+    });
+
+  const getOtherUserLatestMessage = (conversation, user) => {
+    if (conversation && conversation.messages) {
+      const otherUserMessages = conversation.messages.filter(
+        (message) => message.senderId !== user.id
+      );
+      return otherUserMessages[otherUserMessages.length - 1];
+    }
+    return null;
+  };
+
+  // get other user's latest checked msg
+  // it is used for tracking the lastest checked msg of other user
+  const otherUserLatestReadMessage = useMemo(
+    () => getOtherUserLatestReadMessage(latestReadMessages, conversation, user),
+    [conversation, latestReadMessages, user]
   );
   // get other user's latest created msg
   // it is used for updating my latest checked msg in this cov
-  const otherUserLatestMessage = getOtherUserLatestMessage(conversation, user);
+  const otherUserLatestMessage = useMemo(
+    () => getOtherUserLatestMessage(conversation, user),
+    [conversation, user]
+  );
 
   // when I click the active chat room, keep my latest checked message up-to-date
   const handleClick = (conversation, user, otherUserLatestMessage) => {
