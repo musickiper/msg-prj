@@ -44,7 +44,7 @@ const ActiveChat = (props) => {
   const classes = useStyles();
   const { user, postLatestReadMessage } = props;
   const conversation = props.conversation || {};
-  const latestReadMessages = props.latestReadMessage || {};
+  const latestReadMessages = props.latestReadMessage || [];
 
   // get other user's latest checked msg
   // it is used for tracking the lastest checked msg of other user
