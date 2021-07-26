@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Box } from "@material-ui/core";
 import { Input, Header, Messages } from "./index";
@@ -66,17 +66,20 @@ const ActiveChat = (props) => {
   );
 
   // when I click the active chat room, keep my latest checked message up-to-date
-  const handleClick = (conversation, user, otherUserLatestMessage) => {
-    if (otherUserLatestMessage) {
-      postLatestReadMessage({
-        message: {
-          userId: user.id,
-          conversationId: conversation.id,
-          messageId: otherUserLatestMessage.id,
-        },
-      });
-    }
-  };
+  const handleClick = useCallback(
+    (conversation, user, otherUserLatestMessage) => {
+      if (otherUserLatestMessage) {
+        postLatestReadMessage({
+          message: {
+            userId: user.id,
+            conversationId: conversation.id,
+            messageId: otherUserLatestMessage.id,
+          },
+        });
+      }
+    },
+    [postLatestReadMessage]
+  );
 
   return (
     <Box

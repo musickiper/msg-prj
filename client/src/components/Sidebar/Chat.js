@@ -93,12 +93,12 @@ const Chat = (props) => {
   // get other user's latest created msg in this conv
   const otherUserLatestMessage = useMemo(
     () => getOtherUserLatestMessage(conversation.messages, otherUser.id),
-    [conversation.messages, otherUser.id]
+    [conversation, otherUser]
   );
   // get my latest checked msg in this conv
   const latestReadMessage = useMemo(
     () => findLatestReadMessage(latestReadMessages, user.id, conversation.id),
-    [conversation.id, latestReadMessages, user.id]
+    [conversation, latestReadMessages, user]
   );
   // get count of unread other's messages in this cov
   const unreadMessagesCount = useMemo(
@@ -109,7 +109,7 @@ const Chat = (props) => {
         latestReadMessage,
         otherUserLatestMessage
       ),
-    [conversation.messages, latestReadMessage, otherUserLatestMessage, user]
+    [conversation, latestReadMessage, otherUserLatestMessage, user]
   );
 
   return (
