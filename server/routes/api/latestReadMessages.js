@@ -45,10 +45,12 @@ router.post("/", async (req, res, next) => {
     const userId = req.user.id;
     const { messageId, conversationId } = req.body.message;
 
-    let latestReadMessage = await LatestReadMessage.findLatestReadMessage(
-      conversationId,
-      userId
-    );
+    let latestReadMessage = await LatestReadMessage.findOne({
+      where: {
+        userId: userId,
+        conversationId: conversationId,
+      },
+    });
 
     if (!latestReadMessage) {
       // create latestReadMessage
@@ -61,7 +63,11 @@ router.post("/", async (req, res, next) => {
     latestReadMessage.messageId = messageId;
     await latestReadMessage.save();
 
-    return res.json(latestReadMessage);
+    if (latestReadMessage) {
+      return res.status(200).json(latestReadMessage);
+    } else {
+      return res.status(201).json(latestReadMessage);
+    }
   } catch (error) {
     next(error);
   }

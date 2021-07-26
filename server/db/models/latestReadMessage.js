@@ -16,21 +16,4 @@ const LatestReadMessage = db.define("latestReadMessage", {
   },
 });
 
-// find latestReadMessage given conv Id & user Id
-
-LatestReadMessage.findLatestReadMessage = async function (
-  conversationId,
-  userId
-) {
-  const latestReadMessage = await LatestReadMessage.findOne({
-    where: {
-      userId: userId,
-      conversationId: conversationId,
-    },
-  });
-
-  // return latestReadMessage or null if it doesn't exist
-  return latestReadMessage;
-};
-
 module.exports = LatestReadMessage;
