@@ -91,6 +91,7 @@ export const updateLatestReadMsgOfStore = (state, latestReadMessage) => {
       message.userId === latestReadMessage.userId
   );
 
+  // if there is any matched message, update it
   if (matchedMessage) {
     return state.map((message) => {
       if (
@@ -106,6 +107,7 @@ export const updateLatestReadMsgOfStore = (state, latestReadMessage) => {
       }
     });
   } else {
+    // if there is not matched message, add new one to state
     const newState = [...state];
     newState.push(latestReadMessage);
     return newState;
