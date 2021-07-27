@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Redirect, useHistory } from "react-router-dom";
 import { connect } from "react-redux";
 import {
@@ -15,13 +15,16 @@ const Login = (props) => {
   const history = useHistory();
   const { user, login } = props;
 
-  const handleLogin = async (event) => {
-    event.preventDefault();
-    const username = event.target.username.value;
-    const password = event.target.password.value;
+  const handleLogin = useCallback(
+    async (event) => {
+      event.preventDefault();
+      const username = event.target.username.value;
+      const password = event.target.password.value;
 
-    await login({ username, password });
-  };
+      await login({ username, password });
+    },
+    [login]
+  );
 
   if (user.id) {
     return <Redirect to="/home" />;
