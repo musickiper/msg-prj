@@ -7,7 +7,13 @@ import {
 } from "./store/conversations";
 import { updateLatestReadMessage } from "./store/latestReadMessage";
 
-const socket = io(window.location.origin);
+const token = localStorage.getItem("messenger-token");
+
+const socket = io(window.location.origin, {
+  auth: {
+    token,
+  },
+});
 
 socket.on("connect", () => {
   console.log("connected to server");
