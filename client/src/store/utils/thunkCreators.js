@@ -148,8 +148,6 @@ export const searchUsers = (searchTerm) => async (dispatch) => {
 export const postLatestReadMessage =
   (message, otherUserId) => async (dispatch) => {
     try {
-      console.dir(message);
-      console.dir(otherUserId);
       const latestReadMessage = await saveLatestReadMessage({ message });
       dispatch(updateLatestReadMessage(latestReadMessage));
       sendLatestReadMessage(latestReadMessage, otherUserId);
