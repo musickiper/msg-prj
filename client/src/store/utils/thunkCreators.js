@@ -111,6 +111,13 @@ export const saveLatestReadMessage = async (message) => {
   return data;
 };
 
+const sendLatestReadMessage = (message, otherUserId) => {
+  socket.emit("send-latest-read-message", {
+    message,
+    otherUserId,
+  });
+};
+
 // message format to send: {recipientId, text, conversationId}
 // conversationId will be set to null if its a brand new conversation
 export const postMessage = (body) => async (dispatch) => {
@@ -138,11 +145,13 @@ export const searchUsers = (searchTerm) => async (dispatch) => {
   }
 };
 
-export const postLatestReadMessage = (message) => async (dispatch) => {
-  try {
-    const latestReadMessage = await saveLatestReadMessage(message);
-    dispatch(updateLatestReadMessage(latestReadMessage));
-  } catch (error) {
-    console.error(error);
-  }
-};
+export const postLatestReadMessage =
+  (message, otherUserId) => async (dispatch) => {
+    try {
+      const latestReadMessage = await saveLatestReadMessage({ message });
+      dispatch(updateLatestReadMessage(latestReadMessage));
+      sendLatestReadMessage(latestReadMessage, otherUserId);
+    } catch (error) {
+      console.error(error);
+    }
+  };

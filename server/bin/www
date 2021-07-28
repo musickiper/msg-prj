@@ -30,9 +30,25 @@ const server = http.createServer(app);
  */
 
 const io = require("socket.io")(server);
+const jwt = require("jsonwebtoken");
 
-io.on("connection", (socket) => {
+const socketIds = require("../socketIds");
+
+io.use((socket, next) => {
+  if (socket.handshake.auth && socket.handshake.auth.token) {
+    const { token } = socket.handshake.auth;
+    jwt.verify(token, process.env.SESSION_SECRET, (err, decoded) => {
+      if (err) {
+        return next(new Error("Authentication Failed."));
+      }
+      return next();
+    });
+  } else {
+    return next(new Error("Authentication Failed."));
+  }
+}).on("connection", (socket) => {
   socket.on("go-online", (id) => {
+    socketIds[id] = socket.id;
     if (!onlineUsers.includes(id)) {
       onlineUsers.push(id);
     }
@@ -41,10 +57,24 @@ io.on("connection", (socket) => {
   });
 
   socket.on("new-message", (data) => {
-    socket.broadcast.emit("new-message", {
-      message: data.message,
-      sender: data.sender,
-    });
+    const { recipientId, message, sender } = data;
+    const recipientSocketId = socketIds[recipientId];
+    if (recipientSocketId) {
+      socket.to(recipientSocketId).emit("new-message", {
+        message,
+        sender,
+      });
+    }
+  });
+
+  socket.on("send-latest-read-message", (data) => {
+    const { otherUserId: recipientId, message } = data;
+    const recipientSocketId = socketIds[recipientId];
+    if (recipientSocketId) {
+      socket.to(recipientSocketId).emit("send-latest-read-message", {
+        message,
+      });
+    }
   });
 
   socket.on("logout", (id) => {
