@@ -4,7 +4,7 @@ import { BadgeAvatar, ChatContent } from "../Sidebar";
 import { withStyles } from "@material-ui/core/styles";
 import { setActiveChat } from "../../store/activeConversation";
 import { postLatestReadMessage } from "../../store/utils/thunkCreators";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 const styles = {
   root: {
@@ -24,28 +24,33 @@ const styles = {
 };
 
 const Chat = (props) => {
-  const { user, classes, conversation, latestReadMessages } = props;
+  const { classes, conversation } = props;
+  const dispatch = useDispatch();
   const otherUser = conversation.otherUser;
+  const { user, latestReadMessage: latestReadMessages } = useSelector(
+    ({ user, latestReadMessage }) => ({
+      user,
+      latestReadMessage,
+    })
+  );
 
   const handleClick = useCallback(
     async (conversation, user, otherUserLatestMessage) => {
-      await props.setActiveChat(conversation.otherUser.username);
+      dispatch(setActiveChat(conversation.otherUser.username));
 
       // update my latest checked msg in this conv
       // to other user's latest created msg
       if (otherUserLatestMessage) {
         const { id, senderId } = otherUserLatestMessage;
-        props.postLatestReadMessage({
-          message: {
-            userId: user.id,
-            conversationId: conversation.id,
-            messageId: id,
-          },
-          otherUserId: senderId,
-        });
+        const message = {
+          userId: user.id,
+          conversationId: conversation.id,
+          messageId: id,
+        };
+        dispatch(postLatestReadMessage(message, senderId));
       }
     },
-    [props]
+    [dispatch]
   );
 
   // find latest checked other's msg of mine
@@ -140,26 +145,4 @@ const Chat = (props) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    user: state.user,
-    latestReadMessages: state.latestReadMessage,
-  };
-};
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    setActiveChat: (id) => {
-      dispatch(setActiveChat(id));
-    },
-    postLatestReadMessage: (data) => {
-      const { message, otherUserId } = data;
-      dispatch(postLatestReadMessage(message, otherUserId));
-    },
-  };
-};
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(withStyles(styles)(Chat));
+export default withStyles(styles)(Chat);

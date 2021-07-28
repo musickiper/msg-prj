@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Redirect, useHistory } from "react-router-dom";
 import { connect } from "react-redux";
 import {
@@ -17,20 +17,23 @@ const Login = (props) => {
   const { user, register } = props;
   const [formErrorMessage, setFormErrorMessage] = useState({});
 
-  const handleRegister = async (event) => {
-    event.preventDefault();
-    const username = event.target.username.value;
-    const email = event.target.email.value;
-    const password = event.target.password.value;
-    const confirmPassword = event.target.confirmPassword.value;
+  const handleRegister = useCallback(
+    async (event) => {
+      event.preventDefault();
+      const username = event.target.username.value;
+      const email = event.target.email.value;
+      const password = event.target.password.value;
+      const confirmPassword = event.target.confirmPassword.value;
 
-    if (password !== confirmPassword) {
-      setFormErrorMessage({ confirmPassword: "Passwords must match" });
-      return;
-    }
+      if (password !== confirmPassword) {
+        setFormErrorMessage({ confirmPassword: "Passwords must match" });
+        return;
+      }
 
-    await register({ username, email, password });
-  };
+      await register({ username, email, password });
+    },
+    [register]
+  );
 
   if (user.id) {
     return <Redirect to="/home" />;
