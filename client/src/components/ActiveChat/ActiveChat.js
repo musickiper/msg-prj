@@ -2,7 +2,7 @@ import React, { useMemo, useCallback } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Box } from "@material-ui/core";
 import { Input, Header, Messages } from "./index";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { postLatestReadMessage } from "../../store/utils/thunkCreators";
 
 const useStyles = makeStyles(() => ({
@@ -21,16 +21,32 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const ActiveChat = (props) => {
+const ActiveChat = () => {
   const classes = useStyles();
-  const { user, postLatestReadMessage } = props;
-  const conversation = useMemo(
-    () => props.conversation || {},
-    [props.conversation]
-  );
+  const dispatch = useDispatch();
+  const { user, conversations, activeConversation, latestReadMessage } =
+    useSelector(
+      ({ user, conversations, activeConversation, latestReadMessage }) => ({
+        user,
+        conversations,
+        activeConversation,
+        latestReadMessage,
+      })
+    );
+
+  const conversation = useMemo(() => {
+    if (conversations) {
+      const conversation = conversations.find(
+        (conversation) => conversation.otherUser.username === activeConversation
+      );
+      return conversation ? conversation : {};
+    }
+    return {};
+  }, [activeConversation, conversations]);
+
   const latestReadMessages = useMemo(
-    () => props.latestReadMessage || [],
-    [props.latestReadMessage]
+    () => latestReadMessage || [],
+    [latestReadMessage]
   );
 
   const getOtherUserLatestReadMessage = (
@@ -70,17 +86,15 @@ const ActiveChat = (props) => {
     (conversation, user, otherUserLatestMessage) => {
       if (otherUserLatestMessage) {
         const { id, senderId } = otherUserLatestMessage;
-        postLatestReadMessage({
-          message: {
-            userId: user.id,
-            conversationId: conversation.id,
-            messageId: id,
-          },
-          otherUserId: senderId,
-        });
+        const message = {
+          userId: user.id,
+          conversationId: conversation.id,
+          messageId: id,
+        };
+        dispatch(postLatestReadMessage(message, senderId));
       }
     },
-    [postLatestReadMessage]
+    [dispatch]
   );
 
   return (
@@ -117,26 +131,4 @@ const ActiveChat = (props) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    user: state.user,
-    conversation:
-      state.conversations &&
-      state.conversations.find(
-        (conversation) =>
-          conversation.otherUser.username === state.activeConversation
-      ),
-    latestReadMessage: state.latestReadMessage,
-  };
-};
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    postLatestReadMessage: (data) => {
-      const { message, otherUserId } = data;
-      dispatch(postLatestReadMessage(message, otherUserId));
-    },
-  };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(ActiveChat);
+export default ActiveChat;
