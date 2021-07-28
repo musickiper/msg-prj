@@ -7,6 +7,10 @@ import {
   setSearchedUsers,
 } from "../conversations";
 import { gotUser, setFetchingStatus } from "../user";
+import {
+  gotLatestReadMessages,
+  updateLatestReadMessage,
+} from "../latestReadMessage";
 
 axios.interceptors.request.use(async function (config) {
   const token = await localStorage.getItem("messenger-token");
@@ -91,6 +95,22 @@ const sendMessage = (data, body) => {
   });
 };
 
+// LATEST READ MESSAGE THUNK CREATORS
+
+export const fetchLatestReadMessages = () => async (dispatch) => {
+  try {
+    const { data } = await axios.get("/api/latestReadMessages");
+    dispatch(gotLatestReadMessages(data));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const saveLatestReadMessage = async (message) => {
+  const { data } = await axios.post("/api/latestReadMessages", message);
+  return data;
+};
+
 // message format to send: {recipientId, text, conversationId}
 // conversationId will be set to null if its a brand new conversation
 export const postMessage = (body) => async (dispatch) => {
@@ -113,6 +133,15 @@ export const searchUsers = (searchTerm) => async (dispatch) => {
   try {
     const { data } = await axios.get(`/api/users/${searchTerm}`);
     dispatch(setSearchedUsers(data));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const postLatestReadMessage = (message) => async (dispatch) => {
+  try {
+    const latestReadMessage = await saveLatestReadMessage(message);
+    dispatch(updateLatestReadMessage(latestReadMessage));
   } catch (error) {
     console.error(error);
   }

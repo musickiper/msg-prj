@@ -81,3 +81,35 @@ export const addNewConvoToStore = (state, recipientId, message) => {
     }
   });
 };
+
+// if there is matched latestReadMessage, update it with new message in store
+// if not, add new latestReadMessage to store
+export const updateLatestReadMsgOfStore = (state, latestReadMessage) => {
+  const matchedMessage = state.find(
+    (message) =>
+      message.conversationId === latestReadMessage.conversationId &&
+      message.userId === latestReadMessage.userId
+  );
+
+  // if there is any matched message, update it
+  if (matchedMessage) {
+    return state.map((message) => {
+      if (
+        message.conversationId === latestReadMessage.conversationId &&
+        message.userId === latestReadMessage.userId
+      ) {
+        return {
+          ...message,
+          ...latestReadMessage,
+        };
+      } else {
+        return message;
+      }
+    });
+  } else {
+    // if there is not matched message, add new one to state
+    const newState = [...state];
+    newState.push(latestReadMessage);
+    return newState;
+  }
+};

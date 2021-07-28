@@ -1,6 +1,7 @@
 const Conversation = require("./conversation");
 const User = require("./user");
 const Message = require("./message");
+const LatestReadMessage = require("./latestReadMessage");
 
 // associations
 
@@ -13,5 +14,6 @@ Conversation.hasMany(Message);
 module.exports = {
   User,
   Conversation,
-  Message
+  Message,
+  LatestReadMessage,
 };
